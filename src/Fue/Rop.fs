@@ -4,7 +4,7 @@ open System
 
 type Error =
     // General
-    | GeneralError of Exception
+    | GeneralError of Exception * templateValue: obj
     // Compiler
     | CannotExtractProperty of key:string
     | NoMethodOrPropertyFound of source:obj * name:string
@@ -17,7 +17,7 @@ type Error =
 
 let explain = function
     // General
-    | GeneralError(ex) -> sprintf "Unhandled exception \"%s\" occured. StackTrace: %s" ex.Message ex.StackTrace
+    | GeneralError(ex, value) -> sprintf "Unhandled exception \"%s\" when compiling \"%A\" occured. StackTrace: %s" ex.Message value ex.StackTrace
     // Compiler
     | CannotExtractProperty(key) -> sprintf "Cannot extract property after \".\" symbol from \"%s\"" key
     | NoMethodOrPropertyFound(source, name) -> sprintf "No property or method named \"%s\" found for \"%A\"" name source
@@ -47,10 +47,10 @@ let extract = function
         |> sprintf "Success expected, but result state is Failure with errors: %s"
         |> failwith
 
-let catch func =
+let catch templateValue func =
     try
         func()
-    with :? System.Exception as ex -> GeneralError(ex) |> fail
+    with :? System.Exception as ex -> GeneralError(ex, templateValue) |> fail
 
 let bind f result =
     match result with

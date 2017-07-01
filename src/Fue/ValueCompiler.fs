@@ -66,8 +66,8 @@ let private extractSimpleValue value =
     | Failure(f) -> f |> Failure
 
 /// Compiles template value into obj
-let compile data value =
-    catch(fun _ ->
+let compile data tempateValue =
+    catch tempateValue (fun _ ->
         let rec comp v =
             match v with
             | SimpleValue(valueName) -> valueName |> search data |> extractSimpleValue
@@ -81,5 +81,5 @@ let compile data value =
                     | Method(ob, mi) -> mi.Invoke(ob, methodParams)
                 )
             | Literal(value) -> value |> success
-        comp value
+        comp tempateValue
     )
